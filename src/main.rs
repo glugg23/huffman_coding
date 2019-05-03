@@ -42,4 +42,14 @@ fn main() {
             kind: NodeKind::Leaf(entry.0)
         });
     }
+
+    while prior_freq.len() > 1 {
+        let left = prior_freq.pop().unwrap();
+        let right = prior_freq.pop().unwrap();
+
+        prior_freq.push(Node {
+            freq: left.freq + right.freq,
+            kind: NodeKind::Internal(Box::new(left), Box::new(right))
+        });
+    }
 }
