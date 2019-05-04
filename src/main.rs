@@ -1,5 +1,6 @@
 use std::collections::btree_map::BTreeMap;
 use std::collections::binary_heap::BinaryHeap;
+use std::env;
 
 #[derive(Debug, Eq, PartialEq)]
 enum NodeKind {
@@ -26,7 +27,13 @@ impl PartialOrd for Node {
 }
 
 fn main() {
-    let text = "test";
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        println!("Usage: huffman_coding [filename]");
+        return;
+    }
+
+    let text = &args[1];
 
     let mut freq = BTreeMap::new();
 
