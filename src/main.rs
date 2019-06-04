@@ -86,4 +86,26 @@ fn main() {
     for ch in text.chars() {
         encoded_text.append(&mut codes[&ch].clone());
     }
+
+    let encoded_text = encoded_text.chunks(8).into_iter().map(|chunk| {
+        let mut output = 0b0000_0000;
+
+        for i in 0..chunk.len() {
+            if chunk[i] == 1 {
+                match i {
+                    0 => output |= 0b1000_0000,
+                    1 => output |= 0b0100_0000,
+                    2 => output |= 0b0010_0000,
+                    3 => output |= 0b0001_0000,
+                    4 => output |= 0b0000_1000,
+                    5 => output |= 0b0000_0100,
+                    6 => output |= 0b0000_0010,
+                    7 => output |= 0b0000_0001,
+                    _ => ()
+                }
+            }
+        }
+
+        return output;
+    }).collect::<Vec<u8>>();
 }
