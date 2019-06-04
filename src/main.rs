@@ -1,18 +1,18 @@
-use std::collections::btree_map::BTreeMap;
 use std::collections::binary_heap::BinaryHeap;
+use std::collections::btree_map::BTreeMap;
 use std::collections::HashMap;
 use std::env;
 
 #[derive(Debug, Eq, PartialEq)]
 enum NodeKind {
     Internal(Box<Node>, Box<Node>),
-    Leaf(char)
+    Leaf(char),
 }
 
 #[derive(Debug, Eq, PartialEq)]
 struct Node {
     freq: usize,
-    kind: NodeKind
+    kind: NodeKind,
 }
 
 impl Ord for Node {
@@ -64,7 +64,7 @@ fn main() {
     for entry in freq {
         prior_freq.push(Node {
             freq: entry.1,
-            kind: NodeKind::Leaf(entry.0)
+            kind: NodeKind::Leaf(entry.0),
         });
     }
 
@@ -74,7 +74,7 @@ fn main() {
 
         prior_freq.push(Node {
             freq: left.freq + right.freq,
-            kind: NodeKind::Internal(Box::new(left), Box::new(right))
+            kind: NodeKind::Internal(Box::new(left), Box::new(right)),
         });
     }
 
@@ -87,25 +87,28 @@ fn main() {
         encoded_text.append(&mut codes[&ch].clone());
     }
 
-    let encoded_text = encoded_text.chunks(8).into_iter().map(|chunk| {
-        let mut output = 0b0000_0000;
+    let encoded_text = encoded_text
+        .chunks(8)
+        .map(|chunk| {
+            let mut output = 0b0000_0000;
 
-        for i in 0..chunk.len() {
-            if chunk[i] == 1 {
-                match i {
-                    0 => output |= 0b1000_0000,
-                    1 => output |= 0b0100_0000,
-                    2 => output |= 0b0010_0000,
-                    3 => output |= 0b0001_0000,
-                    4 => output |= 0b0000_1000,
-                    5 => output |= 0b0000_0100,
-                    6 => output |= 0b0000_0010,
-                    7 => output |= 0b0000_0001,
-                    _ => ()
+            for (i, &bit) in chunk.iter().enumerate() {
+                if bit == 1 {
+                    match i {
+                        0 => output |= 0b1000_0000,
+                        1 => output |= 0b0100_0000,
+                        2 => output |= 0b0010_0000,
+                        3 => output |= 0b0001_0000,
+                        4 => output |= 0b0000_1000,
+                        5 => output |= 0b0000_0100,
+                        6 => output |= 0b0000_0010,
+                        7 => output |= 0b0000_0001,
+                        _ => (),
+                    }
                 }
             }
-        }
 
-        return output;
-    }).collect::<Vec<u8>>();
+            output
+        })
+        .collect::<Vec<u8>>();
 }
