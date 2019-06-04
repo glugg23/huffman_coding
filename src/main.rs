@@ -80,4 +80,10 @@ fn main() {
 
     let mut codes = HashMap::new();
     generate_codes(prior_freq.peek().unwrap(), vec![0u8; 0], &mut codes);
+
+    let mut encoded_text = Vec::new();
+
+    for ch in text.chars() {
+        encoded_text.append(&mut codes[&ch].clone());
+    }
 }
