@@ -1,5 +1,6 @@
 use std::collections::btree_map::BTreeMap;
 use std::collections::binary_heap::BinaryHeap;
+use std::collections::HashMap;
 use std::env;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -23,6 +24,23 @@ impl Ord for Node {
 impl PartialOrd for Node {
     fn partial_cmp(&self, rhs: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(&rhs))
+    }
+}
+
+fn generate_codes(node: &Node, prefix: Vec<u8>, out_codes: &mut HashMap<char, Vec<u8>>) {
+    match node.kind {
+        NodeKind::Internal(ref left, ref right) => {
+            let mut left_prefix = prefix.clone();
+            left_prefix.push(0);
+            generate_codes(&left, left_prefix, out_codes);
+
+            let mut right_prefix = prefix;
+            right_prefix.push(1);
+            generate_codes(&right, right_prefix, out_codes);
+        }
+        NodeKind::Leaf(ch) => {
+            out_codes.insert(ch, prefix);
+        }
     }
 }
 
@@ -59,4 +77,7 @@ fn main() {
             kind: NodeKind::Internal(Box::new(left), Box::new(right))
         });
     }
+
+    let mut codes = HashMap::new();
+    generate_codes(prior_freq.peek().unwrap(), vec![0u8; 0], &mut codes);
 }
