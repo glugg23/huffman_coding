@@ -5,13 +5,16 @@ use std::env;
 use std::fs::File;
 use std::io::{BufWriter, Read, Write};
 
-#[derive(Debug, Eq, PartialEq)]
+use byteorder::{BigEndian, WriteBytesExt};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 enum NodeKind {
     Internal(Box<Node>, Box<Node>),
     Leaf(char),
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Node {
     freq: usize,
     kind: NodeKind,
@@ -120,6 +123,16 @@ fn main() {
     let file = format!("{}.out", &args[1]);
     let file = File::create(file).expect("ERROR: Failed to create file");
     let mut writer = BufWriter::new(file);
+
+    //Encode tree into binary
+    let tree = bincode::serialize(&prior_freq.peek().unwrap()).unwrap();
+
+    //Write the size of the tree in bytes to the start of the file
+    writer.write_u32::<BigEndian>(tree.len() as u32).expect("ERROR: Failed to write tree size");
+
+    for byte in tree {
+        writer.write_all(&[byte]).expect("ERROR: Failed to write tree");
+    }
 
     for byte in encoded_text {
         writer.write_all(&[byte]).expect("ERROR: Failed to write byte");
