@@ -2,6 +2,8 @@ use std::collections::binary_heap::BinaryHeap;
 use std::collections::btree_map::BTreeMap;
 use std::collections::HashMap;
 use std::env;
+use std::fs::File;
+use std::io::{BufWriter, Read, Write};
 
 #[derive(Debug, Eq, PartialEq)]
 enum NodeKind {
@@ -51,7 +53,10 @@ fn main() {
         return;
     }
 
-    let text = &args[1];
+    let mut file = File::open(&args[1]).expect("ERROR: File not found");
+
+    let mut text = String::new();
+    file.read_to_string(&mut text).unwrap();
 
     let mut freq = BTreeMap::new();
 
@@ -111,4 +116,12 @@ fn main() {
             output
         })
         .collect::<Vec<u8>>();
+
+    let file = format!("{}.out", &args[1]);
+    let file = File::create(file).expect("ERROR: Failed to create file");
+    let mut writer = BufWriter::new(file);
+
+    for byte in encoded_text {
+        writer.write_all(&[byte]).expect("ERROR: Failed to write byte");
+    }
 }
