@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufReader, Read};
 
+use byteorder::{BigEndian, ReadBytesExt};
 use clap::{App, AppSettings, Arg, crate_authors, crate_name, crate_version};
 
 use huffman_coding::*;
@@ -51,6 +52,25 @@ fn main() {
         write_text(path.as_str(), &encoded_text, &tree)
             .expect("ERROR: Failed to write output file");
     } else if matches.is_present("extract") {
-        //TODO
+        let filename = matches.value_of("extract").unwrap();
+
+        let file = File::open(filename).expect("ERROR: File not found");
+        let mut reader = BufReader::new(file);
+
+        let tree_size = reader
+            .read_u32::<BigEndian>()
+            .expect("ERROR: Failed to read tree size");
+
+        let mut tree = Vec::new();
+        for _ in 0..tree_size {
+            tree.push(reader.read_u8().expect("ERROR: Failed to read tree size"));
+        }
+
+        let tree: Node = bincode::deserialize(&tree).unwrap();
+
+        let mut encoded_text = Vec::new();
+        reader
+            .read_to_end(&mut encoded_text)
+            .expect("ERROR: Failed to read text");
     }
 }
