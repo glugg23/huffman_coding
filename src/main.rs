@@ -74,10 +74,37 @@ fn main() {
             .read_to_end(&mut encoded_text)
             .expect("ERROR: Failed to read text");
 
-        let encoded_text: BitVec<BigEndian, u8> =
+        let mut encoded_text: BitVec<BigEndian, u8> =
             encoded_text.iter().fold(BitVec::new(), |mut acc, &byte| {
                 acc.append::<BigEndian, u8>(&mut BitVec::from_element(byte));
                 acc
             });
+
+        let mut output = Vec::new();
+        while encoded_text.len() != 0 {
+            decode_bytes(&tree, &mut encoded_text, &mut output);
+        }
+    }
+}
+
+fn decode_bytes(node: &Node, bits: &mut BitVec<BigEndian, u8>, output: &mut Vec<char>) {
+    match node.kind {
+        NodeKind::Internal(ref left, ref right) => {
+            if bits.len() == 0 {
+                //BitVec::remove panics when index is out of range, and this panic cannot be caught
+                return;
+            } else {
+                let bit = bits.remove(0);
+                //if bit == 1
+                if bit {
+                    decode_bytes(right, bits, output);
+                } else {
+                    decode_bytes(left, bits, output);
+                }
+            }
+        }
+        NodeKind::Leaf(ch) => {
+            output.push(ch);
+        }
     }
 }
