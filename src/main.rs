@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Read};
 
-use byteorder::{BigEndian, ReadBytesExt};
+use bitvec::{prelude::BigEndian, vec::BitVec};
+use byteorder::ReadBytesExt;
 use clap::{App, AppSettings, Arg, crate_authors, crate_name, crate_version};
 
 use huffman_coding::*;
@@ -58,7 +59,7 @@ fn main() {
         let mut reader = BufReader::new(file);
 
         let tree_size = reader
-            .read_u32::<BigEndian>()
+            .read_u32::<byteorder::BigEndian>()
             .expect("ERROR: Failed to read tree size");
 
         let mut tree = Vec::new();
@@ -72,5 +73,11 @@ fn main() {
         reader
             .read_to_end(&mut encoded_text)
             .expect("ERROR: Failed to read text");
+
+        let encoded_text: BitVec<BigEndian, u8> =
+            encoded_text.iter().fold(BitVec::new(), |mut acc, &byte| {
+                acc.append::<BigEndian, u8>(&mut BitVec::from_element(byte));
+                acc
+            });
     }
 }
