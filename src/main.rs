@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, BufWriter, Write};
 
 use bitvec::{prelude::BigEndian, vec::BitVec};
 use byteorder::ReadBytesExt;
@@ -74,15 +74,30 @@ fn main() {
             .read_to_end(&mut encoded_text)
             .expect("ERROR: Failed to read text");
 
+        println!("Read file");
+
         let mut encoded_text: BitVec<BigEndian, u8> =
             encoded_text.iter().fold(BitVec::new(), |mut acc, &byte| {
                 acc.append::<BigEndian, u8>(&mut BitVec::from_element(byte));
                 acc
             });
 
+        println!("Converted file to bits");
+
         let mut output = Vec::new();
         while encoded_text.len() != 0 {
+            println!("{} bits, {} chars", encoded_text.len(), output.len());
             decode_bytes(&tree, &mut encoded_text, &mut output);
+        }
+
+        println!("Decoded bits");
+
+        let path = format!("{}.txt", filename);
+        let file = File::create(path).expect("ERROR: Failed to create file");
+        let mut writer = BufWriter::new(file);
+
+        for ch in output {
+            writer.write(&[ch as u8]).unwrap();
         }
     }
 }
